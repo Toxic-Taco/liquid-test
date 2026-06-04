@@ -1,6 +1,63 @@
+// Global variables for UI controls
+let distortionFactor = 0.15;
+let waveFactor = 0.2;
+let noiseFactor = 0.5;
+let gradientColors = [
+  '#98D2EB',
+  '#677D83',
+  '#FABFC4',
+  '#DB8A74',
+  '#2F243A',
+  '#000000'
+];
+let backgroundColor = '#000000';
+
+let gradientGraphics;
+let distortionShader;
+let distortionStrength = 0;
+let targetDistortion = 0;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let mouseSpeed = 0;
+
+let sidebarCollapsed = false;
+let isMobile = false;
+let toggleSidebarBtn;
+let expandSidebarBtn;
+let saveImageBtn;
+
 function setup() {
+  isMobile = window.matchMedia("(max-width: 768px)").matches;
+
   const canvas = createCanvas(windowWidth - 300, windowHeight, WEBGL);
   canvas.parent('canvas-container');
+
+  // Create toggle button for sidebar
+  toggleSidebarBtn = document.createElement('button');
+  toggleSidebarBtn.className = 'collapse-btn';
+  toggleSidebarBtn.innerHTML = '✕';
+  toggleSidebarBtn.addEventListener('click', toggleSidebar);
+  document.getElementById('sidebar').prepend(toggleSidebarBtn);
+
+  // Create expand button for canvas
+  expandSidebarBtn = document.createElement('button');
+  expandSidebarBtn.className = 'expand-btn';
+  expandSidebarBtn.innerHTML = '☰';
+  expandSidebarBtn.style.display = 'none';
+  expandSidebarBtn.addEventListener('click', toggleSidebar);
+  document.getElementById('canvas-container').appendChild(expandSidebarBtn);
+
+  // Create save button for mobile
+  if (isMobile) {
+    document.getElementById('save-hint').style.display = 'none';
+    saveImageBtn = document.createElement('button');
+    saveImageBtn.className = 'save-btn';
+    saveImageBtn.innerHTML = 'Save Image';
+    saveImageBtn.addEventListener('click', () => {
+      saveCanvas('gradient_water_effect', 'png');
+    });
+    document.getElementById('canvas-container').appendChild(saveImageBtn);
+  }
 
   // Create color input fields
   const colorControls = document.getElementById('color-controls');
@@ -13,6 +70,7 @@ function setup() {
     label.style.display = 'block';
     label.style.marginBottom = '5px';
 
+    // Container for input + preview
     const inputContainer = document.createElement('div');
     inputContainer.style.display = 'flex';
     inputContainer.style.alignItems = 'center';
@@ -54,6 +112,7 @@ function setup() {
     colorControls.appendChild(div);
   });
 
+  // Background color control
   const bgDiv = document.createElement('div');
   bgDiv.style.marginBottom = '10px';
   bgDiv.style.marginTop = '15px';
@@ -103,6 +162,7 @@ function setup() {
   bgDiv.appendChild(bgInputContainer);
   colorControls.appendChild(bgDiv);
 
+  // Set up slider event listeners
   document.getElementById('distortionFactor').addEventListener('input', function() {
     distortionFactor = parseFloat(this.value);
     document.getElementById('distortionFactorValue').textContent = distortionFactor.toFixed(3);
@@ -185,54 +245,26 @@ function setup() {
   `;
 
   distortionShader = createShader(vertSrc, fragSrc);
-
-  // Mobile: Sidebar toggle
-  if ('ontouchstart' in window || window.innerWidth <= 768) {
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.createElement('button');
-    toggleBtn.textContent = 'Toggle Sidebar';
-    toggleBtn.style.width = '100%';
-    toggleBtn.style.padding = '10px';
-    toggleBtn.style.backgroundColor = '#444';
-    toggleBtn.style.color = 'white';
-    toggleBtn.style.border = 'none';
-    toggleBtn.style.borderRadius = '3px';
-    toggleBtn.style.cursor = 'pointer';
-    toggleBtn.style.marginBottom = '20px';
-    toggleBtn.style.fontFamily = 'monospace';
-
-    toggleBtn.addEventListener('click', function() {
-      sidebar.classList.toggle('collapsed');
-      const newWidth = sidebar.classList.contains('collapsed') ? windowWidth : windowWidth - 300;
-      resizeCanvas(newWidth, windowHeight);
-      gradientGraphics.resizeCanvas(width, height);
-      updateGradient();
-    });
-
-    sidebar.insertBefore(toggleBtn, sidebar.firstChild);
-  }
 }
 
-let distortionFactor = 0.15;
-let waveFactor = 0.2;
-let noiseFactor = 0.5;
-let gradientColors = [
-  '#98D2EB',
-  '#677D83',
-  '#FABFC4',
-  '#DB8A74',
-  '#2F243A',
-  '#000000'
-];
-let backgroundColor = '#000000';
-
-let gradientGraphics;
-let distortionShader;
-let distortionStrength = 0;
-let targetDistortion = 0;
-let lastMouseX = 0;
-let lastMouseY = 0;
-let mouseSpeed = 0;
+function toggleSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  const sidebar = document.getElementById('sidebar');
+  if (sidebarCollapsed) {
+    sidebar.classList.add('collapsed');
+    expandSidebarBtn.style.display = 'block';
+    toggleSidebarBtn.style.display = 'none';
+    resizeCanvas(windowWidth, windowHeight);
+    gradientGraphics.resizeCanvas(windowWidth, windowHeight);
+  } else {
+    sidebar.classList.remove('collapsed');
+    expandSidebarBtn.style.display = 'none';
+    toggleSidebarBtn.style.display = 'block';
+    resizeCanvas(windowWidth - 300, windowHeight);
+    gradientGraphics.resizeCanvas(windowWidth - 300, windowHeight);
+  }
+  updateGradient();
+}
 
 function hexToP5Color(hex) {
   hex = hex.replace('#', '');
@@ -258,7 +290,9 @@ function updateGradient() {
 
   gradientGraphics.push();
   gradientGraphics.translate(gradientGraphics.width/2, gradientGraphics.height/2);
+
   const size = min(gradientGraphics.width, gradientGraphics.height);
+
   gradientGraphics.fillGradient('radial', {
     from: [0, 0, 0],
     to: [0, 0, size/2],
@@ -301,11 +335,7 @@ function draw() {
 }
 
 function windowResized() {
-  const sidebar = document.getElementById('sidebar');
-  const sidebarWidth = sidebar.classList.contains('collapsed') ? 0 : 300;
-  resizeCanvas(windowWidth - sidebarWidth, windowHeight);
-  gradientGraphics.resizeCanvas(width, height);
-  updateGradient();
+  // No automatic resizing of canvas
 }
 
 function keyPressed() {
@@ -313,39 +343,3 @@ function keyPressed() {
     saveCanvas('gradient_water_effect', 'png');
   }
 }
-
-function touchStarted() {
-  if (touches.length >= 2) {
-    let sumX = 0, sumY = 0;
-    for (let t of touches) {
-      sumX += t.x;
-      sumY += t.y;
-    }
-    mouseX = sumX / touches.length;
-    mouseY = sumY / touches.length;
-    mouseSpeed = 50;
-  }
-  return false;
-}
-
-function touchMoved() {
-  if (touches.length >= 2) {
-    let sumX = 0, sumY = 0;
-    for (let t of touches) {
-      sumX += t.x;
-      sumY += t.y;
-    }
-    const newX = sumX / touches.length;
-    const newY = sumY / touches.length;
-    mouseSpeed = dist(mouseX, mouseY, newX, newY) * 2;
-    mouseX = newX;
-    mouseY = newY;
-  }
-  return false;
-}
-
-// Save button handler
-document.getElementById('save-button').addEventListener('click', function(e) {
-  e.stopPropagation();
-  saveCanvas('gradient_water_effect', 'png');
-});
