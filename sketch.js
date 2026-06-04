@@ -28,8 +28,8 @@ let saveImageBtn;
 
 function setup() {
   isMobile = window.matchMedia("(max-width: 768px)").matches;
-
-  const canvas = createCanvas(windowWidth - 350, windowHeight, WEBGL);
+  const canvasWidth = isMobile ? windowWidth : windowWidth - 350;
+  const canvas = createCanvas(canvasWidth, windowHeight, WEBGL);
   canvas.parent('canvas-container');
 
   // Create toggle button for sidebar
@@ -54,7 +54,7 @@ function setup() {
     saveImageBtn.className = 'save-btn';
     saveImageBtn.innerHTML = 'Save Image';
     saveImageBtn.addEventListener('click', () => saveCanvas('gradient_water_effect', 'png'));
-    document.getElementById('canvas-container').appendChild(saveImageBtn);
+    document.body.appendChild(saveImageBtn);
   }
 
   // Create color input fields
@@ -225,12 +225,22 @@ function toggleSidebar() {
     sidebar.classList.add('collapsed');
     expandSidebarBtn.style.display = 'block';
     toggleSidebarBtn.style.display = 'none';
-    resizeCanvas(windowWidth, windowHeight);
   } else {
     sidebar.classList.remove('collapsed');
     expandSidebarBtn.style.display = 'none';
     toggleSidebarBtn.style.display = 'block';
-    resizeCanvas(windowWidth - 350, windowHeight);
+  }
+  resizeCanvasForSidebar();
+}
+
+function resizeCanvasForSidebar() {
+  if (isMobile) {
+    resizeCanvas(windowWidth, windowHeight);
+  } else {
+    const newWidth = document.getElementById('sidebar').classList.contains('collapsed')
+      ? windowWidth
+      : windowWidth - 350;
+    resizeCanvas(newWidth, windowHeight);
   }
   gradientGraphics.resizeCanvas(width, height);
   updateGradient();
@@ -303,11 +313,7 @@ function draw() {
 }
 
 function windowResized() {
-  const sidebar = document.getElementById('sidebar');
-  const newWidth = sidebar.classList.contains('collapsed') ? windowWidth : windowWidth - 350;
-  resizeCanvas(newWidth, windowHeight);
-  gradientGraphics.resizeCanvas(newWidth, windowHeight);
-  updateGradient();
+  resizeCanvasForSidebar();
 }
 
 function keyPressed() {
