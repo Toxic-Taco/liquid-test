@@ -29,7 +29,7 @@ let saveImageBtn;
 function setup() {
   isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-  const canvas = createCanvas(windowWidth - 300, windowHeight, WEBGL);
+  const canvas = createCanvas(windowWidth - 350, windowHeight, WEBGL);
   canvas.parent('canvas-container');
 
   // Create toggle button for sidebar
@@ -53,9 +53,7 @@ function setup() {
     saveImageBtn = document.createElement('button');
     saveImageBtn.className = 'save-btn';
     saveImageBtn.innerHTML = 'Save Image';
-    saveImageBtn.addEventListener('click', () => {
-      saveCanvas('gradient_water_effect', 'png');
-    });
+    saveImageBtn.addEventListener('click', () => saveCanvas('gradient_water_effect', 'png'));
     document.getElementById('canvas-container').appendChild(saveImageBtn);
   }
 
@@ -70,34 +68,20 @@ function setup() {
     label.style.display = 'block';
     label.style.marginBottom = '5px';
 
-    // Container for input + preview
     const inputContainer = document.createElement('div');
-    inputContainer.style.display = 'flex';
-    inputContainer.style.alignItems = 'center';
-    inputContainer.style.gap = '10px';
+    inputContainer.className = 'color-input-container';
 
     const input = document.createElement('input');
     input.type = 'text';
     input.value = color;
-    input.style.flex = '1';
-    input.style.padding = '5px';
-    input.style.backgroundColor = '#444';
-    input.style.color = 'white';
-    input.style.border = '1px solid #666';
-    input.style.borderRadius = '3px';
 
     const preview = document.createElement('div');
-    preview.style.width = '20px';
-    preview.style.height = '20px';
+    preview.className = 'color-preview';
     preview.style.backgroundColor = color;
-    preview.style.border = '1px solid #666';
-    preview.style.borderRadius = '3px';
 
     input.addEventListener('input', function() {
       let value = this.value;
-      if (!value.startsWith('#')) {
-        value = '#' + value;
-      }
+      if (!value.startsWith('#')) value = '#' + value;
       if (/^#[0-9A-Fa-f]{3,6}$/.test(value)) {
         gradientColors[index] = value;
         preview.style.backgroundColor = value;
@@ -123,32 +107,19 @@ function setup() {
   bgLabel.style.marginBottom = '5px';
 
   const bgInputContainer = document.createElement('div');
-  bgInputContainer.style.display = 'flex';
-  bgInputContainer.style.alignItems = 'center';
-  bgInputContainer.style.gap = '10px';
+  bgInputContainer.className = 'color-input-container';
 
   const bgInput = document.createElement('input');
   bgInput.type = 'text';
   bgInput.value = backgroundColor;
-  bgInput.style.flex = '1';
-  bgInput.style.padding = '5px';
-  bgInput.style.backgroundColor = '#444';
-  bgInput.style.color = 'white';
-  bgInput.style.border = '1px solid #666';
-  bgInput.style.borderRadius = '3px';
 
   const bgPreview = document.createElement('div');
-  bgPreview.style.width = '20px';
-  bgPreview.style.height = '20px';
+  bgPreview.className = 'color-preview';
   bgPreview.style.backgroundColor = backgroundColor;
-  bgPreview.style.border = '1px solid #666';
-  bgPreview.style.borderRadius = '3px';
 
   bgInput.addEventListener('input', function() {
     let value = this.value;
-    if (!value.startsWith('#')) {
-      value = '#' + value;
-    }
+    if (!value.startsWith('#')) value = '#' + value;
     if (/^#[0-9A-Fa-f]{3,6}$/.test(value)) {
       backgroundColor = value;
       bgPreview.style.backgroundColor = value;
@@ -212,9 +183,9 @@ function setup() {
       vec2 f = fract(p);
       vec2 u = f * f * (3.0 - 2.0 * f);
       return mix(mix(hash(i + vec2(0.0, 0.0)),
-                       hash(i + vec2(1.0, 0.0)), u.x),
-                 mix(hash(i + vec2(0.0, 1.0)),
-                       hash(i + vec2(1.0, 1.0)), u.x), u.y);
+                     hash(i + vec2(1.0, 0.0)), u.x),
+               mix(hash(i + vec2(0.0, 1.0)),
+                     hash(i + vec2(1.0, 1.0)), u.x), u.y);
     }
 
     void main() {
@@ -255,14 +226,13 @@ function toggleSidebar() {
     expandSidebarBtn.style.display = 'block';
     toggleSidebarBtn.style.display = 'none';
     resizeCanvas(windowWidth, windowHeight);
-    gradientGraphics.resizeCanvas(windowWidth, windowHeight);
   } else {
     sidebar.classList.remove('collapsed');
     expandSidebarBtn.style.display = 'none';
     toggleSidebarBtn.style.display = 'block';
-    resizeCanvas(windowWidth - 300, windowHeight);
-    gradientGraphics.resizeCanvas(windowWidth - 300, windowHeight);
+    resizeCanvas(windowWidth - 350, windowHeight);
   }
+  gradientGraphics.resizeCanvas(width, height);
   updateGradient();
 }
 
@@ -289,13 +259,11 @@ function updateGradient() {
   const p5Colors = gradientColors.map(hexToP5Color);
 
   gradientGraphics.push();
-  gradientGraphics.translate(gradientGraphics.width/2, gradientGraphics.height/2);
-
+  gradientGraphics.translate(gradientGraphics.width / 2, gradientGraphics.height / 2);
   const size = min(gradientGraphics.width, gradientGraphics.height);
-
   gradientGraphics.fillGradient('radial', {
     from: [0, 0, 0],
-    to: [0, 0, size/2],
+    to: [0, 0, size / 2],
     steps: p5Colors
   });
   gradientGraphics.noStroke();
@@ -319,7 +287,7 @@ function draw() {
   distortionShader.setUniform('texture', gradientGraphics);
   distortionShader.setUniform('time', millis() * 0.001);
   distortionShader.setUniform('distortion', distortionStrength);
-  distortionShader.setUniform('mousePos', [mouseX/width, 1.0 - mouseY/height]);
+  distortionShader.setUniform('mousePos', [mouseX / width, 1.0 - mouseY / height]);
   distortionShader.setUniform('distortionFactor', distortionFactor);
   distortionShader.setUniform('waveFactor', waveFactor);
   distortionShader.setUniform('noiseFactor', noiseFactor);
@@ -335,11 +303,13 @@ function draw() {
 }
 
 function windowResized() {
-  // No automatic resizing of canvas
+  const sidebar = document.getElementById('sidebar');
+  const newWidth = sidebar.classList.contains('collapsed') ? windowWidth : windowWidth - 350;
+  resizeCanvas(newWidth, windowHeight);
+  gradientGraphics.resizeCanvas(newWidth, windowHeight);
+  updateGradient();
 }
 
 function keyPressed() {
-  if (key === '5') {
-    saveCanvas('gradient_water_effect', 'png');
-  }
+  if (key === '5') saveCanvas('gradient_water_effect', 'png');
 }
