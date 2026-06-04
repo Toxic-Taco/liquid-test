@@ -1,57 +1,3 @@
- // Mobile: Sidebar toggle
-      if ('ontouchstart' in window || window.innerWidth <= 768) {
-        const sidebar = document.getElementById('sidebar');
-        const toggleBtn = document.createElement('button');
-        toggleBtn.textContent = 'Toggle Sidebar';
-        toggleBtn.style.width = '100%';
-        toggleBtn.style.padding = '10px';
-        toggleBtn.style.backgroundColor = '#444';
-        toggleBtn.style.color = 'white';
-        toggleBtn.style.border = 'none';
-        toggleBtn.style.borderRadius = '3px';
-        toggleBtn.style.cursor = 'pointer';
-        toggleBtn.style.marginBottom = '20px';
-        toggleBtn.style.fontFamily = 'monospace';
-
-        toggleBtn.addEventListener('click', function() {
-          sidebar.classList.toggle('collapsed');
-          const newWidth = sidebar.classList.contains('collapsed') ? windowWidth : windowWidth - 300;
-          resizeCanvas(newWidth, windowHeight);
-          gradientGraphics.resizeCanvas(width, height);
-          updateGradient();
-        });
-
-        sidebar.insertBefore(toggleBtn, sidebar.firstChild);
-      }
-
-      // Save button handler
-      document.getElementById('save-button').addEventListener('click', function(e) {
-        e.stopPropagation();
-        saveCanvas('gradient_water_effect', 'png');
-      });
-
-// Global variables for UI controls
-let distortionFactor = 0.15;
-let waveFactor = 0.2;
-let noiseFactor = 0.5;
-let gradientColors = [
-  '#98D2EB',
-  '#677D83',
-  '#FABFC4',
-  '#DB8A74',
-  '#2F243A',
-  '#000000'
-];
-let backgroundColor = '#000000';
-
-let gradientGraphics;
-let distortionShader;
-let distortionStrength = 0;
-let targetDistortion = 0;
-let lastMouseX = 0;
-let lastMouseY = 0;
-let mouseSpeed = 0;
-
 function setup() {
   const canvas = createCanvas(windowWidth - 300, windowHeight, WEBGL);
   canvas.parent('canvas-container');
@@ -239,7 +185,54 @@ function setup() {
   `;
 
   distortionShader = createShader(vertSrc, fragSrc);
+
+  // Mobile: Sidebar toggle
+  if ('ontouchstart' in window || window.innerWidth <= 768) {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.createElement('button');
+    toggleBtn.textContent = 'Toggle Sidebar';
+    toggleBtn.style.width = '100%';
+    toggleBtn.style.padding = '10px';
+    toggleBtn.style.backgroundColor = '#444';
+    toggleBtn.style.color = 'white';
+    toggleBtn.style.border = 'none';
+    toggleBtn.style.borderRadius = '3px';
+    toggleBtn.style.cursor = 'pointer';
+    toggleBtn.style.marginBottom = '20px';
+    toggleBtn.style.fontFamily = 'monospace';
+
+    toggleBtn.addEventListener('click', function() {
+      sidebar.classList.toggle('collapsed');
+      const newWidth = sidebar.classList.contains('collapsed') ? windowWidth : windowWidth - 300;
+      resizeCanvas(newWidth, windowHeight);
+      gradientGraphics.resizeCanvas(width, height);
+      updateGradient();
+    });
+
+    sidebar.insertBefore(toggleBtn, sidebar.firstChild);
+  }
 }
+
+let distortionFactor = 0.15;
+let waveFactor = 0.2;
+let noiseFactor = 0.5;
+let gradientColors = [
+  '#98D2EB',
+  '#677D83',
+  '#FABFC4',
+  '#DB8A74',
+  '#2F243A',
+  '#000000'
+];
+let backgroundColor = '#000000';
+
+let gradientGraphics;
+let distortionShader;
+let distortionStrength = 0;
+let targetDistortion = 0;
+let lastMouseX = 0;
+let lastMouseY = 0;
+let mouseSpeed = 0;
 
 function hexToP5Color(hex) {
   hex = hex.replace('#', '');
@@ -350,3 +343,9 @@ function touchMoved() {
   }
   return false;
 }
+
+// Save button handler
+document.getElementById('save-button').addEventListener('click', function(e) {
+  e.stopPropagation();
+  saveCanvas('gradient_water_effect', 'png');
+});
