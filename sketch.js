@@ -1,24 +1,34 @@
- // Mobile detection and save button setup
+ // Mobile: Sidebar toggle
       if ('ontouchstart' in window || window.innerWidth <= 768) {
-        const saveText = document.querySelector('#sidebar p');
-        if (saveText) {
-          const saveBtn = document.createElement('button');
-          saveBtn.textContent = 'Save Image';
-          saveBtn.style.width = '100%';
-          saveBtn.style.padding = '10px';
-          saveBtn.style.backgroundColor = '#444';
-          saveBtn.style.color = 'white';
-          saveBtn.style.border = 'none';
-          saveBtn.style.borderRadius = '3px';
-          saveBtn.style.cursor = 'pointer';
-          saveBtn.style.marginTop = '20px';
-          saveBtn.style.fontFamily = 'monospace';
-          saveBtn.addEventListener('click', function() {
-            saveCanvas('gradient_water_effect', 'png');
-          });
-          saveText.replaceWith(saveBtn);
-        }
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = 'Toggle Sidebar';
+        toggleBtn.style.width = '100%';
+        toggleBtn.style.padding = '10px';
+        toggleBtn.style.backgroundColor = '#444';
+        toggleBtn.style.color = 'white';
+        toggleBtn.style.border = 'none';
+        toggleBtn.style.borderRadius = '3px';
+        toggleBtn.style.cursor = 'pointer';
+        toggleBtn.style.marginBottom = '20px';
+        toggleBtn.style.fontFamily = 'monospace';
+
+        toggleBtn.addEventListener('click', function() {
+          sidebar.classList.toggle('collapsed');
+          const newWidth = sidebar.classList.contains('collapsed') ? windowWidth : windowWidth - 300;
+          resizeCanvas(newWidth, windowHeight);
+          gradientGraphics.resizeCanvas(width, height);
+          updateGradient();
+        });
+
+        sidebar.insertBefore(toggleBtn, sidebar.firstChild);
       }
+
+      // Save button handler
+      document.getElementById('save-button').addEventListener('click', function(e) {
+        e.stopPropagation();
+        saveCanvas('gradient_water_effect', 'png');
+      });
 
 // Global variables for UI controls
 let distortionFactor = 0.15;
@@ -57,7 +67,6 @@ function setup() {
     label.style.display = 'block';
     label.style.marginBottom = '5px';
 
-    // Container for input + preview
     const inputContainer = document.createElement('div');
     inputContainer.style.display = 'flex';
     inputContainer.style.alignItems = 'center';
@@ -99,7 +108,6 @@ function setup() {
     colorControls.appendChild(div);
   });
 
-  // Background color control (added under Color 6)
   const bgDiv = document.createElement('div');
   bgDiv.style.marginBottom = '10px';
   bgDiv.style.marginTop = '15px';
@@ -149,7 +157,6 @@ function setup() {
   bgDiv.appendChild(bgInputContainer);
   colorControls.appendChild(bgDiv);
 
-  // Set up slider event listeners
   document.getElementById('distortionFactor').addEventListener('input', function() {
     distortionFactor = parseFloat(this.value);
     document.getElementById('distortionFactorValue').textContent = distortionFactor.toFixed(3);
@@ -258,9 +265,7 @@ function updateGradient() {
 
   gradientGraphics.push();
   gradientGraphics.translate(gradientGraphics.width/2, gradientGraphics.height/2);
-
   const size = min(gradientGraphics.width, gradientGraphics.height);
-
   gradientGraphics.fillGradient('radial', {
     from: [0, 0, 0],
     to: [0, 0, size/2],
@@ -303,7 +308,9 @@ function draw() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth - 300, windowHeight);
+  const sidebar = document.getElementById('sidebar');
+  const sidebarWidth = sidebar.classList.contains('collapsed') ? 0 : 300;
+  resizeCanvas(windowWidth - sidebarWidth, windowHeight);
   gradientGraphics.resizeCanvas(width, height);
   updateGradient();
 }
@@ -312,4 +319,34 @@ function keyPressed() {
   if (key === '5') {
     saveCanvas('gradient_water_effect', 'png');
   }
+}
+
+function touchStarted() {
+  if (touches.length >= 2) {
+    let sumX = 0, sumY = 0;
+    for (let t of touches) {
+      sumX += t.x;
+      sumY += t.y;
+    }
+    mouseX = sumX / touches.length;
+    mouseY = sumY / touches.length;
+    mouseSpeed = 50;
+  }
+  return false;
+}
+
+function touchMoved() {
+  if (touches.length >= 2) {
+    let sumX = 0, sumY = 0;
+    for (let t of touches) {
+      sumX += t.x;
+      sumY += t.y;
+    }
+    const newX = sumX / touches.length;
+    const newY = sumY / touches.length;
+    mouseSpeed = dist(mouseX, mouseY, newX, newY) * 2;
+    mouseX = newX;
+    mouseY = newY;
+  }
+  return false;
 }
